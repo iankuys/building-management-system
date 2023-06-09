@@ -282,6 +282,76 @@ def handle_door(pin):
             door_state = "Closed"
             door_state_change = True
 
+# Button events detection
+GPIO.add_event_detect(up_btn_pin, GPIO.RISING, callback=handle_hvac, bouncetime=300)
+GPIO.add_event_detect(down_btn_pin, GPIO.RISING, callback=handle_hvac, bouncetime=300)
+GPIO.add_event_detect(door_btn_pin, GPIO.RISING, callback=handle_door, bouncetime=300)
 
-# if __name__ == '__main__':
+if __name__ == '__main__':
+    try:
+        print('[Main] BMS starts')
+        lock = threading.Lock()
+        curr = datetime.now()
+        hr = curr.hour
+
+        print('[Main] CIMIS Thread Start')
+        t0 = threading.Thread(target=cimis_thread)
+        # t0.daemon = True
+        t0.start()
+        while(humidity is None):
+            time.sleep(1)
+
+        print('[Main] Initializing PIR sensor, please allow about 1 minutes to set up')
+        t1 = threading.Thread(target=dht11_thread, args=(lock,))
+        # t1.daemon = True
+        t1.start()
+        print('[Main] Waiting for initial temperature being calculated...')
+        time.sleep(5)
+        print('[Main] Current temperature is ready')
+        t2 = threading.Thread(target=hvac_thread, args=(lock,))
+        # t2.daemon = True
+        t2.start()
+        time.sleep(55)
+
+        print('[Main] PIR is ready')
+        t3 = threading.Thread(target=pir_thread, args=(lock,))
+        # t3.daemon = True
+        t3.start()
+
+        print('[Main] LCD is ready')
+        t4 = threading.Thread(target=LCD.lcd_thread, args=(lock,))
+        # t3.daemon = True
+        t4.start()
+
+        msg = input('[Main] Press <Enter> key to exit the program: \n')
+        terminated = True
+        t0.join()
+        t1.join()
+        t2.join()
+        t3.join()
+        t4.join()
+
+        GPIO.cleanup()
+        print('BMS ends')
+    except KeyboardInterrupt:
+        terminated = True
+        t0.join()
+        t1.join()
+        t2.join()
+        t3.join()
+        t4.join()
+
+        GPIO.cleanup()
+        print('BMS ends')
+    except:
+        terminated = True
+        t0.join()
+        t1.join()
+        t2.join()
+        t3.join()
+        t4.join()
+
+        GPIO.cleanup()
+        print('BMS ends')
+
 
