@@ -294,6 +294,11 @@ if __name__ == '__main__':
         curr = datetime.now()
         hr = curr.hour
 
+        print('[Main] LCD is ready')
+        t = threading.Thread(target=LCD.lcd_thread, args=(lock,))
+        # t3.daemon = True
+        t.start()
+
         print('[Main] CIMIS Thread Start')
         t0 = threading.Thread(target=cimis_thread)
         # t0.daemon = True
@@ -318,8 +323,8 @@ if __name__ == '__main__':
         # t3.daemon = True
         t3.start()
 
-        print('[Main] LCD is ready')
-        t4 = threading.Thread(target=LCD.lcd_thread, args=(lock,))
+        print('[Main] Fire Thread is ready')
+        t4 = threading.Thread(target=fire_thread, args=(lock,))
         # t3.daemon = True
         t4.start()
 
@@ -330,6 +335,7 @@ if __name__ == '__main__':
         t2.join()
         t3.join()
         t4.join()
+        t.join()
 
         GPIO.cleanup()
         print('BMS ends')
@@ -340,6 +346,7 @@ if __name__ == '__main__':
         t2.join()
         t3.join()
         t4.join()
+        t.join()
 
         GPIO.cleanup()
         print('BMS ends')
@@ -350,6 +357,7 @@ if __name__ == '__main__':
         t2.join()
         t3.join()
         t4.join()
+        t.join()
 
         GPIO.cleanup()
         print('BMS ends')
