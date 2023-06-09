@@ -10,19 +10,19 @@ from time import sleep
 import time
 
 #define the pins
-dht_pin = 17     #GPIO 17
-pir_pin = 23      #GPIO 23
+dht_pin = 11     #GPIO 17
+pir_pin = 16      #GPIO 23
 
-up_btn_pin = 25
-down_btn_pin = 18
-door_btn_pin = 27
+up_btn_pin = 22     #GPIO 25
+down_btn_pin = 12      #GPIO 18 
+door_btn_pin = 13     #GPIO 27
 
-green_led_pin = 12     #GPIO12
-red_led_pin = 16      #GPIO 16
-blue_led_pin = 20      #GPIO 20
+green_led_pin = 32     #GPIO12
+red_led_pin = 36    #GPIO 16
+blue_led_pin = 38      #GPIO 20
 
-
-GPIO.setmode(GPIO.BCM)       
+GPIO.setwarnings(False)
+GPIO.setmode(GPIO.BOARD)       
 
 #Setup DHT , create DHT class
 dht = DHT.DHT(dht_pin)  
