@@ -17,18 +17,19 @@ up_btn_pin = 25
 down_btn_pin = 18
 door_btn_pin = 27
 
-green_led_pin = 15     #CHANGE THIS LATER
+green_led_pin = 12     #GPIO12
 red_led_pin = 16      #GPIO 16
 blue_led_pin = 20      #GPIO 20
 
 
-GPIO.setmode(GPIO.BOARD)       
+GPIO.setmode(GPIO.BCM)       
 
 #Setup DHT , create DHT class
 dht = DHT.DHT(dht_pin)  
 
 GPIO.setup(red_led_pin, GPIO.OUT, initial = GPIO.LOW) 
 GPIO.setup(blue_led_pin, GPIO.OUT, initial = GPIO.LOW) 
+GPIO.setup(green_led_pin, GPIO.OUT, initial = GPIO.LOW) 
 
 #Setup LCD Display
 LCD.lcd_setup()
