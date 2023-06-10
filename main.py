@@ -8,6 +8,8 @@ from datetime import datetime, timedelta
 import threading
 from time import sleep
 import time
+import sys
+import select
 
 #define the pins
 dht_pin = 11     #GPIO 17
@@ -35,9 +37,9 @@ GPIO.setup(green_led_pin, GPIO.OUT, initial = GPIO.LOW)
 LCD.LCD_setup()
 #Setup PIR sensor 
 GPIO.setup(pir_pin, GPIO.IN)
-GPIO.setup(up_btn_pin, GPIO.IN)
-GPIO.setup(down_btn_pin, GPIO.IN)
-GPIO.setup(door_btn_pin, GPIO.IN)
+GPIO.setup(up_btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(down_btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(door_btn_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 # hvac global variabless
 retrieved_data = None
@@ -136,7 +138,7 @@ def cimis_thread(lock):
             hr = curr.hour
             irr_data = cimis_get(hr)
             humidity = irr_data.get_humidity()
-            print(humidity)
+            # print(humidity)
         sleep(5)
     print('[Main] CIMIS Thread terminated')
 
@@ -150,32 +152,40 @@ def hvac_thread(lock):
     global ac_state
     global bill_cost
     global energy_used
+    global terminated
     
     while(not terminated):
         get_weather_index() # update weather index
         temp_diff = hvac_temp - weather_index
-        GPIO.output(red_led_pin, GPIO.LOW)
-        GPIO.output(blue_led_pin, GPIO.LOW)
-        LCD.display_message("Hi FROM HVAC")
-        sleep(3)
-
+        # GPIO.output(red_led_pin, GPIO.LOW)
+        # GPIO.output(blue_led_pin, GPIO.LOW)
+        # LCD.display_message("Hi FROM HVAC")
+        # sleep(3)
+        # print(temp_diff)
         if (temp_diff > 3):
             if (not heat_state):
                 # turn on heater if desired temp is higher than room temp
                 GPIO.output(red_led_pin, GPIO.HIGH)
                 LCD.display_message("Heat is on")
+                sleep(3)
                 start_time = datetime.now()
                 heat_state = True
+            else:
+                GPIO.output(red_led_pin, GPIO.HIGH)
         elif (temp_diff < 3):
             if (not ac_state):
                 # turn on AC if desired temp is lower than room temp
                 GPIO.output(blue_led_pin, GPIO.HIGH)
                 LCD.display_message("AC is on")
+                sleep(3)
                 start_time = datetime.now()
                 ac_state = True
+            else:
+                GPIO.output(blue_led_pin, GPIO.HIGH)
         else:
             # if heat or ac was already on
             if heat_state:
+                GPIO.output(red_led_pin, GPIO.LOW)
                 end_time = datetime.now()
                 time_difference = end_time - start_time
                 difference_in_seconds = time_difference.total_seconds()
@@ -185,6 +195,7 @@ def hvac_thread(lock):
                 sleep(3)
 
             elif ac_state:
+                GPIO.output(blue_led_pin, GPIO.LOW)
                 end_time = datetime.now()
                 time_difference = end_time - start_time
                 difference_in_seconds = time_difference.total_seconds()
@@ -192,18 +203,11 @@ def hvac_thread(lock):
                 bill_cost = 0.5 * energy_used # 50 cents per kWh
                 LCD.display_message(f'Energy:{energy_used}\n cost: {bill_cost}')
                 sleep(3)
-
-
             heat_state = False
             ac_state = False
-
         #check for button inputs every 3 seconds
         time.sleep(3)
-    if lock.acquire(timeout = 10):
-        print("Exectuted")
-        lock.release()
-    else:
-        print("Timeout")
+
     print('[Main] HVAC Thread terminated')
 
 def handle_hvac(pin):
@@ -213,13 +217,15 @@ def handle_hvac(pin):
         hvac_temp += 1
     elif (pin == down_btn_pin):
         hvac_temp -= 1
+    # print(hvac_temp)
 
 def get_weather_index():
     global temperature
     global humidity
     global weather_index
 
-    weather_index = float(temperature) + 0.05 * float(humidity)
+    weather_index = ((float(temperature) * 9/5) + 32) + 0.05 * float(humidity)
+    # print(weather_index)
 
 # Turn off all LEDs
 def turn_off_leds():
@@ -252,7 +258,7 @@ def fire_thread(lock):
                 blinking_thread.daemon = True
             terminated = True
             fire_state = True
-            print("fire")
+            print("fire!")
             LCD.display_message("FIRE DETECTED!")
             if not blink_state:
                 # Start blink mode by setting blink state to true
@@ -294,12 +300,18 @@ def blink_thread():
     print('[Main] Blink Thread terminated')
 
 #**************************************** security system ***************************************************
-def security_thread():
+def security_thread(lock):
     global door_state
+    global door_state_change
+    global terminated
+    global security_on
 
-    while (not terminated or security_on):
+    # might need to add security_on later on
+    while (not terminated):
         if (door_state_change):
-            LCD.display_message("door/window" + door_state)
+            LCD.display_message("Door/Window\n" + door_state)
+            door_state_change = False
+            sleep(3)
     print('[Main] Security Thread terminated')
 
 def handle_door(pin):
@@ -308,12 +320,16 @@ def handle_door(pin):
     # if door is initially closed, open it
     # else close it
     if (pin == door_btn_pin):
+        # print("door change")
         if (door_state == "Closed"):
             door_state = "Opened"
             door_state_change = True
         else:
             door_state = "Closed"
             door_state_change = True
+
+def input_available():
+    return select.select([sys.stdin], [], [], 0) == ([sys.stdin], [], [])
 
 # Button events detection
 GPIO.add_event_detect(up_btn_pin, GPIO.FALLING, callback=handle_hvac, bouncetime=300)
@@ -359,19 +375,33 @@ if __name__ == '__main__':
         t3.start()
         print('[Main] PIR is ready')
 
-
-        print('[Main] Fire Thread is ready')
         t4 = threading.Thread(target=fire_thread, args=(lock,))
         # t3.daemon = True
         t4.start()
+        print('[Main] Fire Thread is ready')
 
-        msg = input('[Main] Press <Enter> key to exit the program: \n')
-        terminated = True
+        t5 = threading.Thread(target=security_thread, args=(lock,))
+        # t3.daemon = True
+        t5.start()
+        print('[Main] Secuirty Thread Thread is ready')
+
+
+        while True:
+            if input_available():
+                terminated = True
+                security_on = False
+                break
+            # msg = input('[Main] Press <Enter> key to exit the program: \n')
+            time.sleep(1)
+
+        # msg = input('[Main] Press <Enter> key to exit the program: \n')
+        # terminated = True
         t0.join()
         t1.join()
         t2.join()
         t3.join()
         t4.join()
+        t5.join()
         # t.join()
         LCD.lcd_terminate()
         GPIO.cleanup()
@@ -383,6 +413,7 @@ if __name__ == '__main__':
         t2.join()
         t3.join()
         t4.join()
+        t5.join()
         # t.join()
         LCD.lcd_terminate()
         GPIO.cleanup()
@@ -394,6 +425,7 @@ if __name__ == '__main__':
         t2.join()
         t3.join()
         t4.join()
+        t5.join()
         # t.join()
         LCD.lcd_terminate()
         GPIO.cleanup()

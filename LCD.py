@@ -36,6 +36,8 @@ def LCD_setup():
 
     lcd_state = True
     thread = threading.Thread(target=lcd_thread)
+    thread.daemon = True
+    thread.start()
 
 def display_data(data: irrigation_data):
     global new_message
@@ -50,8 +52,8 @@ def display_data(data: irrigation_data):
 def display_message(string) :
     global new_message 
     message = string
-    while(new_message is not None):
-        sleep(1)
+    # while(new_message is not None):
+    #     sleep(1)
     new_message = message 
 
 def lcd_thread():
