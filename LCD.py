@@ -14,6 +14,8 @@ new_message = None
 def LCD_setup():
     global lcd
     global mcp
+    global lcd_state
+    global thread
 
     PCF8574_address = 0x27  # I2C address of the PCF8574 chip.
     PCF8574A_address = 0x3F  # I2C address of the PCF8574A chip.
@@ -46,11 +48,11 @@ def display_data(data: irrigation_data):
 #This function facilitates what gets printed to the LCD based on the message we 
 #receive from main program.  
 def display_message(string) :
-    global incoming_message 
+    global new_message 
     message = string
-    while(incoming_message is not None):
+    while(new_message is not None):
         sleep(1)
-    incoming_message = message 
+    new_message = message 
 
 def lcd_thread():
     global new_message
@@ -65,4 +67,17 @@ def lcd_thread():
             lcd.message(new_message)
             new_message = None
             sleep(3)
+    print('[Main] LCD Thread terminated')
+
+def lcd_terminate():
+    global thread
+    global lcd_state
+
+    lcd_state = False
+
+    thread.join()
+    mcp.output(3,0)
+    lcd.clear()
+
+    
 

@@ -24,7 +24,10 @@ def cimis_get(current_hour):
     if data is None:
         return None
     else:
-        data_received = irrigation_data(data[current_hour-1]['HlyAirTmp']['Value'], data[current_hour-1]['HlyRelHum']['Value'], data[current_hour-1]['HlyEto']['Value'], "CIMIS")
+        # print(data[current_hour-2])
+        # do -2 for now idk why CIMIS is hour slower
+        data_received = irrigation_data(data[current_hour-2]['HlyRelHum']['Value'], data[current_hour-2]['HlyAirTmp']['Value'], data[current_hour-2]['HlyEto']['Value'], "CIMIS")
+
         return data_received
 
 def cimis_api(appkey, location, startDate, endDate):
@@ -47,10 +50,10 @@ def cimis_api(appkey, location, startDate, endDate):
 
 class irrigation_data:
     def __init__(self, humidity,temperature, eto, type):
-        self.humidity = humidity;
-        self.temperature = temperature;
-        self.eto = eto;
-        self.type = type;
+        self.humidity = humidity
+        self.temperature = temperature
+        self.eto = eto
+        self.type = type
     def get_humidity(self):
         return self.humidity
     def get_temperature(self):
