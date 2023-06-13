@@ -268,12 +268,14 @@ def fire_thread(lock):
 
     while (not terminated or fire_state):
         #get_weather_index() # get latest weather index
+        detect_fire() #test fire detection
 
         if weather_index > 95:
             # fire detected!
             # tff HVAC
             terminated = True
             fire_state = True
+            print("fire!")
             LCD.display_message("FIRE DETECTED!")
             if not blink_state:
                 # Start blink mode by setting blink state to true
@@ -285,7 +287,6 @@ def fire_thread(lock):
             fire_state = True
             door_state = "Opened"
             door_state_change = True
-            print("fire!")
             LCD.display_message("DOOR/WINDOW OPEN\n HVAC HALTED")
 
             sleep(3600) #sleep an hour before detecting for fire again
@@ -416,8 +417,6 @@ if __name__ == '__main__':
         # t3.daemon = True
         t5.start()
         print('[Main] Secuirty Thread Thread is ready')
-
-        detect_fire() #test fire detection
 
         while True:
             if input_available():
