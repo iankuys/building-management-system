@@ -9,7 +9,6 @@ location  = 75
 
 def cimis_get(current_hour):
     date = datetime.now() - timedelta(days=1)
-    date = date.strftime('%Y-%m-%d')
     
     # checks if time is the next day at 00:00 till 00:59, then find the cimis data that is recorded from the day before at 2400
     if (current_hour <= 0) and (date.hour > time.localtime(time.time()).tm_hour):
@@ -28,7 +27,7 @@ def cimis_get(current_hour):
     else:
         # print(data[current_hour-2])
         # do -2 for now idk why CIMIS is hour slower
-        data_received = irrigation_data(data[current_hour-1]['HlyRelHum']['Value'], data[current_hour-2]['HlyAirTmp']['Value'])
+        data_received = irrigation_data(data[current_hour-1]['HlyRelHum']['Value'], data[current_hour-1]['HlyAirTmp']['Value'])
 
         return data_received
 
