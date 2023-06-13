@@ -39,9 +39,9 @@ def LCD_setup():
     thread.daemon = True
     thread.start()
 
-def display_data(data: irrigation_data):
+def display_data(data: irrigation_data, door_state, hvac_state, light_state):
     global new_message
-    message = f'{data.get_type}\nT:{str(data.get_temperature)} H:{str(data.get_humidity)}'
+    message = f'{str(int(data.get_temperature()))}/{str(int(data.get_humidity()))}  D:{door_state}\nAC/H:{hvac_state} L:{light_state}'
     # wait till previous message is displayed
     while new_message is not None:
         sleep(1)
