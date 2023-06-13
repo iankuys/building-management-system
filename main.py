@@ -227,6 +227,9 @@ def hvac_thread(lock):
 
                 heat_state = False
                 ac_state = False
+        else:
+            GPIO.output(red_led_pin, GPIO.LOW)
+            GPIO.output(blue_led_pin, GPIO.LOW)
         #check for button inputs every 3 seconds
         time.sleep(3)
 
