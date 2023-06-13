@@ -267,8 +267,8 @@ def fire_thread(lock):
     global door_state_change
 
     while (not terminated or fire_state):
-        #get_weather_index() # get latest weather index
-        detect_fire() #test fire detection
+        get_weather_index() # get latest weather index
+        # detect_fire() #test fire detection
 
         if weather_index > 95:
             # fire detected!
