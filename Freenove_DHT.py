@@ -112,7 +112,7 @@ def loop():
 	while(True):
 		sumCnt += 1
 		chk = dht.readDHT11()	
-		if (chk is 0):
+		if (chk == 0):
 			okCnt += 1		
 		okRate = 100.0*okCnt/sumCnt;
 		print("sumCnt : %d, \t okRate : %.2f%% "%(sumCnt,okRate))
