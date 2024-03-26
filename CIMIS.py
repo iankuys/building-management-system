@@ -1,8 +1,7 @@
 from __future__ import print_function
-import json
-import requests
 from datetime import datetime, timedelta
 import time
+from security import safe_requests
 
 app_key = '612be68d-eb1f-4b43-935d-ab3974d758b6'
 location  = 75  
@@ -37,7 +36,7 @@ def cimis_api(appkey, location, startDate, endDate):
     request_string = ",".join(request_data)
 
     api_url = f'http://et.water.ca.gov/api/data?appKey={appkey}&targets={str(location)}&startDate={startDate}&endDate={endDate}&dataItems={request_string}&unitOfMeasure=M'
-    response = requests.get(api_url)
+    response = safe_requests.get(api_url)
 
     if response.status_code == 200:
         data = response.json()
