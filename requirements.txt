@@ -1,2 +1,3 @@
 Requests==2.31.0
 smbus==1.1.post2
+security==1.3.0
