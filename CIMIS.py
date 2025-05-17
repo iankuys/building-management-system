@@ -37,7 +37,7 @@ def cimis_api(appkey, location, startDate, endDate):
     request_string = ",".join(request_data)
 
     api_url = f'http://et.water.ca.gov/api/data?appKey={appkey}&targets={str(location)}&startDate={startDate}&endDate={endDate}&dataItems={request_string}&unitOfMeasure=M'
-    response = requests.get(api_url)
+    response = requests.get(api_url, timeout=60)
 
     if response.status_code == 200:
         data = response.json()
