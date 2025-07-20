@@ -1,10 +1,12 @@
 # Building Management System (Python)
 
-This is a Python-based Building Management System (BMS) designed to integrate environmental sensors and display systems for real-time monitoring and control. The system was developed using Raspberry Pi-compatible hardware components and includes support for LCD displays, temperature and humidity sensors, and serial data collection.
+A Python-based Building Management System (BMS) designed for real-time monitoring and control of environmental conditions. Built for Raspberry Pi, it integrates sensor data, LCD display, and multithreaded execution for smooth, concurrent hardware interaction.
+
 
 ## Features
 
 - Reads and processes data from environmental sensors (e.g. DHT)
+- **Multithreaded architecture** for concurrent data collection and display
 - Displays data on I2C-connected LCD (16x2) modules
 - Interfaces with CIMIS weather data (California Irrigation Management Information System)
 - Modular and extensible Python codebase
